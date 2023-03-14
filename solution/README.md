@@ -104,3 +104,4 @@ celery -A celeryqueue worker --pool=solo --loglevel=INFO -Q soft,hard
 
 python.exe -m unittest
 
+Интеграционные и системные тесты не создавались.
