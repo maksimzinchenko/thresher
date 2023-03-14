@@ -1,0 +1,106 @@
+
+## Реализация websocket-сервера с celery(redis)
+
+Для решения задачи использовались только asyncio, websockets, celery(+Redis) без использования облачных сервисов или фреймворков.
+
+### **Запуск и тестирование:**
+
+Для тестирования понадобится создать виртуальную среду python venv и установить зависимости из файла requirements.py.
+
+В качестве брокера и бэкэнда в Celery используется Redis (приложение или контейнер).
+
+Установка:  https://redis.io/download/#redis-downloads
+
+или
+
+Контейнер  https://hub.docker.com/_/redis
+
+### **Описание файлов:**
+
+websocket-celery.py - реализация вэбсокет-сервера.
+
+websocket-client_send.py - реализация клиента только для отравки задания и получения ответа с идендификаторов задания.
+
+Для ручного тестирования можно использовать:
+
+python -m websockets ws://localhost:25000/
+
+### **Описание протокола**
+
+Обмен ведется в виде JSON строк.
+
+Формат запроса серверу для вычисления факториала 5:
+
+{"type": "factorial", "number":5}
+
+После отправки запроса сразу же будет получен ответ сервера с идентификатором задачи в celery вида:
+
+{"type": "result", "task_id": "8d5df9bd-922a-465d-a26b-c00df06a59ae"}
+
+После вычисления результата клиенту будет отправлен ответ вида:
+
+{"type": "success", "task_id": "8d5df9bd-922a-465d-a26b-c00df06a59ae", "result": 120}
+
+Для получения результатов прошлого вычисления, зная его task_id:
+
+{"task_id": "8d5df9bd-922a-465d-a26b-c00df06a59ae", "type": "result"}
+
+Время хранения результатов: 3600.
+
+Для запуск celery worker:
+
+celery -A celeryqueue worker --pool=prefork --concurrency=4 --loglevel=INFO -Q soft,hard
+
+### **Сообщения об ошибках:**
+
+Неверный формат запроса:
+{"type": "error", "result": "JSON decode error"}
+
+Таймаут связи. Также выдается при превышении времени вычисления.
+
+Таймауты задаются в файле tasks.py.
+
+SOFT_TASK_TIMEOUT = 10
+
+HARD_TASK_TIMEOUT = 60
+
+Они также установлены для ограничения времени вычислений задач для workers.
+
+Ответ сервера при таймауте:
+
+{"type": "error", "result": "Timeout error"}
+
+При неизвестном типе задачи:
+
+{"type": "error", "result": "Unknown task"}
+
+### **Дополнительное описание**
+
+Для вычисления (факториала) созданы две отдельные задачи с разными параметрами таймаута и используются две очереди celery - soft и hard для обеспечения обработки разных по сложности задач. Для вычисления значений факториала до 1000 используется очередь с именем soft, для вычисления больших значений (>1000) hard. Роутинг очередей и задач прописан в celeryqueue.py.
+
+По-умолчанию используется pool типа prefork, подходящий для вычислительных задач. Ограничение на количество потоков worker - 4.
+
+Для запуск worker для обеих очередей на Linux машинах:
+
+celery -A celeryqueue worker --pool=prefork --concurrency=4 --loglevel=INFO -Q soft,hard
+
+Либо можно разделить workers и назначить каждому свою очередь:
+
+celery -A celeryqueue worker --pool=prefork --concurrency=4 --loglevel=INFO -Q soft
+
+celery -A celeryqueue worker --pool=prefork --concurrency=4 --loglevel=INFO -Q hard
+
+### **Для Windows команду запуска workers необходимо изменить на:**
+
+celery -A celeryqueue worker -P threads --loglevel=INFO -Q soft,hard
+
+или использовать команду:
+
+celery -A celeryqueue worker --pool=solo --loglevel=INFO -Q soft,hard
+
+**Для юнит-тестирования задач и валидаторов запросов использовался unittest.**
+
+Команда для запуска тестирования в Windows:
+
+python.exe -m unittest
+
