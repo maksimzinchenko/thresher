@@ -19,7 +19,11 @@ async def handle_message(message, websocket):
         else:
             await send_response(websocket, {'type': 'error', 'result': 'Unknown task'})
     except ValueError:
-        response = {'type': 'error', 'result': 'JSON decode error'}
+        response = {'type': 'error', 'result': 'Request validation error'}
+        await send_response(websocket, response)
+    except:
+        print("Something else went wrong")
+        response = {'type': 'error', 'result': 'Common error'}
         await send_response(websocket, response)
 
 
