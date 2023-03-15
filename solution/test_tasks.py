@@ -8,3 +8,9 @@ class TestCaseTasks(unittest.TestCase):
         self.assertEqual(factorial_task(0), math.factorial(0))
         self.assertEqual(factorial_task(5), math.factorial(5))
         self.assertEqual(factorial_task(100), math.factorial(100))
+
+
+    def test_factorial_task1000(self):
+        self.assertEqual(factorial_task(0), math.factorial(0))
+        self.assertEqual(factorial_task(5), math.factorial(5))
+        self.assertEqual(factorial_task(100), math.factorial(100))

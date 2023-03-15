@@ -1,6 +1,7 @@
 import unittest
 from validators import validate, MAX_FACTORIAL_VALUE
 
+
 class TestCaseValidators(unittest.TestCase):
 
     def test_validate(self):

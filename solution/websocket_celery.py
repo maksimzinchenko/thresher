@@ -14,10 +14,13 @@ async def handle_message(message, websocket):
             task = await get_factorial(request)
             await send_response(websocket, {'type': 'result', 'task_id': task.id})
             await get_result_waiter(websocket, task)
+            return {"type": "factorial", "result": "success"}
         elif request['type'] == 'result':
             await get_result(websocket, request, app)
+            return {"type": "result", "result": "success"}
         else:
             await send_response(websocket, {'type': 'error', 'result': 'Unknown task'})
+            return {"type": "error", "result": "Unknown request"}
     except ValueError:
         response = {'type': 'error', 'result': 'Request validation error'}
         await send_response(websocket, response)
