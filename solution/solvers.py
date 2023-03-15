@@ -2,7 +2,7 @@ import json
 import asyncio
 from celery.result import AsyncResult
 
-from tasks import factorial_task, factorial_task1000, SOFT_TASK_TIMEOUT
+from tasks import factorial_task, factorial_task1000, HARD_TASK_TIMEOUT
 
 
 async def get_factorial(request):
@@ -20,7 +20,7 @@ async def send_response(websocket, response):
 
 async def get_result_waiter(websocket, task):
     loop = asyncio.get_running_loop()
-    end_time = loop.time() + SOFT_TASK_TIMEOUT
+    end_time = loop.time() + HARD_TASK_TIMEOUT
     while True:
         if loop.time() >= end_time:
             await send_response(websocket, {'type': 'error', 'result': 'Timeout error'})
