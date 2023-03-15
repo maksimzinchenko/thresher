@@ -13,7 +13,7 @@ async def handle_message(message, websocket):
         if request['type'] == 'factorial':
             task = await get_factorial(request)
             await send_response(websocket, {'type': 'result', 'task_id': task.id})
-            task_calc_result = asyncio.create_task(get_result_waiter(websocket, task))
+            asyncio.create_task(get_result_waiter(websocket, task))
         elif request['type'] == 'result':
             await get_result(websocket, request, app)
             return {"type": "result", "result": "success"}
