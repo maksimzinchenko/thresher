@@ -16,7 +16,6 @@ async def handle_message(message, websocket):
             asyncio.create_task(get_result_waiter(websocket, task))
         elif request['type'] == 'result':
             await get_result(websocket, request, app)
-            return {"type": "result", "result": "success"}
         else:
             await send_response(websocket, {'type': 'error', 'result': 'Unknown task'})
     except ValueError:
