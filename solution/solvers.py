@@ -14,8 +14,23 @@ async def get_factorial(request):
     return task
 
 
+async def get_send_factorial(websocket, request):
+    task = None
+    if request['number'] < 1000:
+        task = factorial_task.delay(request['number'])
+    else:
+        task = factorial_task1000.delay(request['number'])
+    await send_response(websocket, {'type': 'result', 'task_id': task.id})
+    asyncio.create_task(get_result_waiter(websocket, task))
+
+
+
 async def send_response(websocket, response):
-    await websocket.send(json.dumps(response))
+    try:
+        await websocket.send(json.dumps(response))
+    except:
+        print('Send client answer error')
+
 
 
 async def get_result_waiter(websocket, task):

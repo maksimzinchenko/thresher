@@ -4,16 +4,14 @@ from websockets.server import serve
 
 from celeryqueue import app
 from validators import validate
-from solvers import get_factorial, get_result_waiter, get_result, send_response
+from solvers import get_factorial, get_result_waiter, get_result, send_response, get_send_factorial
 
 
 async def handle_message(message, websocket):
     try:
         request = validate(message)
         if request['type'] == 'factorial':
-            task = await get_factorial(request)
-            await send_response(websocket, {'type': 'result', 'task_id': task.id})
-            asyncio.create_task(get_result_waiter(websocket, task))
+            asyncio.create_task(get_send_factorial(websocket, request))
         elif request['type'] == 'result':
             await get_result(websocket, request, app)
         else:
