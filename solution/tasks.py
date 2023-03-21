@@ -1,4 +1,5 @@
 import math
+#import time
 
 from celeryqueue import app
 
@@ -12,4 +13,9 @@ def factorial_task(message):
 
 @app.task(time_limit=HARD_TASK_TIMEOUT)
 def factorial_task1000(message):
-    return math.factorial(int(message))
+    #start = time.time()
+    x = math.factorial(int(message))
+    #end = time.time()
+    #delta = end - start
+    #print("calc took %.2f seconds to process" % delta)
+    return  x
